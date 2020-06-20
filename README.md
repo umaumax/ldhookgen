@@ -33,3 +33,8 @@ LD_LIBRARY_PATH=. LD_PRELOAD=./libauto_gen.so ./libtrace_test
   * TID
 * 32bit arm対応
 * シンボルの変数と関数の区別をする方法の調査
+
+## ltraceとの比較
+* `ltrace`では`LD_PRELOAD`ではなく`ptrace`を利用しているため仕組みが異なる
+  * `plt`を利用しないバインド方法では`ltrace`ではトレースができない(e.g. rustバイナリの`malloc`)
+* `ltrace`コマンドが存在しない環境でも利用可能
