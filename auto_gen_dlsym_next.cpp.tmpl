@@ -1,0 +1,13 @@
+void *${DLSYM_NEXT_HOOK_FUNC_NAME}() {
+  static void *(*fptr)() = 0;
+
+  if (fptr == 0) {
+    fptr = (void *(*)())dlsym(RTLD_NEXT, "${HOOK_FUNC_NAME}");
+    if (fptr == nullptr) {
+      (void)printf("dlopen: %s\n", dlerror());
+      exit(1);
+    }
+  }
+
+  return (void *)fptr;
+}
