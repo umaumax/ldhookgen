@@ -1,6 +1,7 @@
     .data
 hello:
-    .string "Hello world!\n"
+    .string  "Hello world!\n"
+    .equ    hello_len, . - hello
 
     .text
     .global _Z5func8iiiiiiii
@@ -19,7 +20,7 @@ _Z5func8iiiiiiii:
     movq  $1, %rax
     movq  $1, %rdi
     movq  hello@GOTPCREL(%rip), %rsi
-    movq  $13, %rdx
+    movq  $hello_len, %rdx
     syscall
 
     call *_dlsym_next@GOTPCREL(%rip)

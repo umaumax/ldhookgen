@@ -16,7 +16,7 @@ g++ -std=c++11 main.cpp -o libtrace_test -L. -lfuncs
 nasm -felf64 auto_gen.s -o auto_gen.o
 g++ -shared -fPIC -std=c++11 auto_gen.o -o libauto_gen.so -ldl
 
-as -o auto_gen.o auto_gen_at.s
+as -o auto_gen.o x86_64_auto_gen_at.s
 g++ -shared -fPIC -std=c++11 auto_gen.o auto_gen_helper.cpp -o libauto_gen.so -ldl
 ```
 

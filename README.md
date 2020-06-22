@@ -31,7 +31,6 @@ LD_LIBRARY_PATH=. LD_PRELOAD=./libauto_gen.so ./libtrace_test
 * ログ出力
   * 関数呼び出しのindent
   * TID
-* 32bit arm対応
 * シンボルの変数と関数の区別をする方法の調査
 
 ## ltraceとの比較

@@ -1,5 +1,6 @@
-.data
+    .data
 hello:
     .string "Hello world!\n"
+    .equ hello_len, . - hello
 
-.include "auto_gen_at_t_body.inc"
+    .include "auto_gen_at_t_body.inc"
