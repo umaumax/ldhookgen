@@ -41,9 +41,12 @@ fi
 cat .func_list | sort | uniq >.func_list.tmp
 mv .func_list.tmp .func_list
 
+# WARN: dlsym() with -lpthread call calloc
 # TODO: Update below list
 # blacklist
 cat >.black_list <<EOF
+calloc
+
 _exit
 
 _init
