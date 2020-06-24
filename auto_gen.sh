@@ -12,6 +12,9 @@ OBJDUMP=${OBJDUMP:-objdump}
 READELF=${READELF:-${TARGET_PREFIX}readelf}
 ARCH=${ARCH:-x86_64}
 
+ELF_FILE=${ELF_FILE:-libtrace_test}
+DSO_FILE=${DSO_FILE:-libfuncs.so}
+
 # init
 rm -f auto_gen_at_t_body.inc
 rm -f auto_gen_dlsym_next_body.cpp
@@ -19,10 +22,22 @@ rm -f auto_gen_dlsym_next_body.cpp
 # NOTE: infomation of '.dynsym' is not removed by strip command
 
 rm -f .func_list
-# $OBJDUMP --dynamic-syms libfuncs.so | grep 'DF .text' | awk '{ print $NF }' >>.func_list
-# $OBJDUMP --dynamic-syms libtrace_test | grep -F 'DF *UND*' | awk '{ print $NF }' >>.func_list
-$READELF --dyn-syms libfuncs.so | awk '$4=="FUNC" && $7!="UND" {print $8}' | sed 's/@.*$//' >>.func_list
-$READELF --dyn-syms libtrace_test | awk '$4=="FUNC" && $7=="UND" {print $8}' | sed 's/@.*$//' >>.func_list
+touch .func_list
+if [[ -f "$DSO_FILE" ]]; then
+  if type "$READELF" >/dev/null 2>&1; then
+    $READELF --dyn-syms "$DSO_FILE" | awk '$4=="FUNC" && $7!="UND" {print $8}' | sed 's/@.*$//' >>.func_list
+  else
+    $OBJDUMP --dynamic-syms "$DSO_FILE" | grep -F 'DF .text' | awk '{ print $NF }' >>.func_list
+  fi
+fi
+
+if [[ -f "$ELF_FILE" ]]; then
+  if type "$READELF" >/dev/null 2>&1; then
+    $READELF --dyn-syms "$ELF_FILE" | awk '$4=="FUNC" && $7=="UND" {print $8}' | sed 's/@.*$//' >>.func_list
+  else
+    $OBJDUMP --dynamic-syms "$ELF_FILE" | grep -F 'DF *UND*' | awk '{ print $NF }' >>.func_list
+  fi
+fi
 cat .func_list | sort | uniq >.func_list.tmp
 mv .func_list.tmp .func_list
 
@@ -38,7 +53,7 @@ __cxa_atexit
 __cxa_finalize
 __libc_start_main
 EOF
-cat .func_list .black_list .black_list | sort | uniq -u >.func_list.tmp
+cat .func_list .black_list .black_list | sort | grep -v '^__' | uniq -u >.func_list.tmp
 mv .func_list.tmp .func_list
 
 function auto_gen() {
