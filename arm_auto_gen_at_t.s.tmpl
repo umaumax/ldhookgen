@@ -13,8 +13,8 @@ ${HOOK_FUNC_NAME}:
     // you can set pre call functions here
     /* syscall write(int fd, const void *buf, size_t count) */
     mov     r0, $1     /* fd := STDOUT_FILENO */
-    ldr     r1, =hello       /* buf := message */
-    ldr     r2, =hello_len   /* count := length */
+    ldr     r1, =${HOOK_FUNC_NAME}_string       /* buf := message */
+    ldr     r2, =${HOOK_FUNC_NAME}_string_len   /* count := length */
     mov     r7, $4     /* write is syscall #4 */
     swi     $0         /* invoke syscall */
 
@@ -31,3 +31,8 @@ ${HOOK_FUNC_NAME}:
     // case: no post hook call
     // call target hooked function
     bx r12
+
+    .data
+${HOOK_FUNC_NAME}_string:
+    .string "${HOOK_FUNC_NAME}\n"
+    .equ ${HOOK_FUNC_NAME}_string_len, . - ${HOOK_FUNC_NAME}_string

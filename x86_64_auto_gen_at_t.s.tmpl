@@ -13,8 +13,8 @@ ${HOOK_FUNC_NAME}:
 
     movq  $1, %rax
     movq  $1, %rdi
-    movq  hello@GOTPCREL(%rip), %rsi
-    movq  $hello_len, %rdx
+    movq  ${HOOK_FUNC_NAME}_string@GOTPCREL(%rip), %rsi
+    movq  $${HOOK_FUNC_NAME}_string_len, %rdx
     syscall
 
     call *${DLSYM_NEXT_HOOK_FUNC_NAME}@GOTPCREL(%rip)
@@ -29,3 +29,8 @@ ${HOOK_FUNC_NAME}:
     popq %rbp
 
     jmpq *%rax
+
+    .data
+${HOOK_FUNC_NAME}_string:
+    .string "${HOOK_FUNC_NAME}\n"
+    .equ ${HOOK_FUNC_NAME}_string_len, . - ${HOOK_FUNC_NAME}_string
