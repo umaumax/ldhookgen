@@ -9,18 +9,37 @@ AS=${AS:-as}
 NM=${NM:-nm}
 CXX=${CXX:-g++}
 OBJDUMP=${OBJDUMP:-objdump}
+READELF=${READELF:-${TARGET_PREFIX}readelf}
 ARCH=${ARCH:-x86_64}
 
 # init
 rm -f auto_gen_at_t_body.inc
 rm -f auto_gen_dlsym_next_body.cpp
 
-# [Man page of MALLOC\_HOOK]( https://linuxjm.osdn.jp/html/LDP_man-pages/man3/malloc_hook.3.html )
-# __malloc_hookはデバッグ用の変数であり，これを機械的に置換するとsegmentation faultとなる
-# echo malloc >.func_list
-# echo __malloc_hook >>.func_list
-# $OBJDUMP -R /lib/x86_64-linux-gnu/libc.so.6 | grep R_X86_64_GLOB_DAT | sed 's/@.*//' | awk '{print $3}' | grep -e malloc -e free >.func_list
-$NM libtrace_test | grep ' U ' | awk '{print $2}' | grep 'func' >.func_list
+# NOTE: infomation of '.dynsym' is not removed by strip command
+
+rm -f .func_list
+# $OBJDUMP --dynamic-syms libfuncs.so | grep 'DF .text' | awk '{ print $NF }' >>.func_list
+# $OBJDUMP --dynamic-syms libtrace_test | grep -F 'DF *UND*' | awk '{ print $NF }' >>.func_list
+$READELF --dyn-syms libfuncs.so | awk '$4=="FUNC" && $7!="UND" {print $8}' | sed 's/@.*$//' >>.func_list
+$READELF --dyn-syms libtrace_test | awk '$4=="FUNC" && $7=="UND" {print $8}' | sed 's/@.*$//' >>.func_list
+cat .func_list | sort | uniq >.func_list.tmp
+mv .func_list.tmp .func_list
+
+# TODO: Update below list
+# blacklist
+cat >.black_list <<EOF
+_exit
+
+_init
+_fini
+
+__cxa_atexit
+__cxa_finalize
+__libc_start_main
+EOF
+cat .func_list .black_list .black_list | sort | uniq -u >.func_list.tmp
+mv .func_list.tmp .func_list
 
 function auto_gen() {
   local target="$1"
